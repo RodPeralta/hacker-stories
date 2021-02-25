@@ -60,15 +60,15 @@ const  App = () => {
     `${API_ENDPOINT}${searchTerm}`
   );
 
-  const handleSearchInput = React.useCallback(event => {
+  const handleSearchInput = event => {
     setSearchTerm(event.target.value);
-  },[setSearchTerm]);
+  };
 
-  const handleSearchSubmit = React.useCallback(event => {
+  const handleSearchSubmit = event => {
     setUrl(`${API_ENDPOINT}${searchTerm}`);
 
     event.preventDefault();
-  },[searchTerm]);
+  };
 
   const [stories, dispatchStories] = React.useReducer(
     storiesReducer,
@@ -96,13 +96,12 @@ const  App = () => {
   }, [handleFetchStories]);
 
 
-  const handleRemoveStory = React.useCallback(item => {
+  const handleRemoveStory = item => {
     dispatchStories({
       type: 'REMOVE_STORY',
       payload: item
     });
-  },[]);
-
+  };
 
   return (
     <div className="container">
@@ -129,7 +128,7 @@ const  App = () => {
 
 
 
-const SearchForm = React.memo(({searchTerm, onSearchInput, onSearchSubmit,}) => (
+const SearchForm = ({searchTerm, onSearchInput, onSearchSubmit,}) => (
   <form onSubmit={onSearchSubmit} className="search-form">
   <InputWithLabel id='search' value={searchTerm} isFocused onInputChange={onSearchInput}>
     <strong>Search:</strong>
@@ -139,7 +138,7 @@ const SearchForm = React.memo(({searchTerm, onSearchInput, onSearchSubmit,}) => 
     Submit
   </button>
 </form>
-));
+);
 
 
 
@@ -163,11 +162,10 @@ const InputWithLabel = ({id, label, value, type='text', isFocused, onInputChange
 
 
 
-const List = React.memo(({list, onRemoveItem}) => 
-  list.map(item => <Item key={item.objectID} item={item} onRemoveItem={onRemoveItem}/>)
-);
+const List = ({list, onRemoveItem}) => 
+  list.map(item => <Item key={item.objectID} item={item} onRemoveItem={onRemoveItem}/>);
 
-const Item = React.memo(({item, onRemoveItem}) => (
+const Item = ({item, onRemoveItem}) => (
   <div className="item">
     <span style={{width: '40% '}}>
       <a href={item.url}>{item.title}</a>
@@ -181,6 +179,6 @@ const Item = React.memo(({item, onRemoveItem}) => (
       </button>
     </span>
   </div>
-));
+);
 
 export default App;
