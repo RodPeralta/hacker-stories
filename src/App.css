@@ -126,3 +126,8 @@ item > span > a {
 
   font-size: 24px;
 }
+
+.arrow {
+  padding: 5px;
+  vertical-align: bottom;
+}
