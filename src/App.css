@@ -59,6 +59,11 @@
   padding-bottom: 5px;
 }
 
+.item_title {
+  font-size: 18px;
+  font-weight: bold;
+}
+
 .item > span {
   padding: 0 5px;
   white-space: nowrap;
@@ -96,6 +101,11 @@ item > span > a {
 
 .button_large {
   padding: 10px;
+}
+
+.button_title {
+  font-size: 18px;
+  font-weight: bold;
 }
 
 .search-form {
