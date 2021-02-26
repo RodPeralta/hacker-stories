@@ -1,6 +1,8 @@
-# Getting Started with Create React App
+# The Road to React
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+
+In this project we will fetch stories from https://hn.algolia.com/ and then employ a search feature and a sort feature.
 
 ## Available Scripts
 
