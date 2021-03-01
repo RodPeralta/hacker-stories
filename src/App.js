@@ -54,24 +54,45 @@ const storiesReducer = (state, action) => {
 
 };
 
+const getUrl = searchTerm => `${API_ENDPOINT}${searchTerm}`;
+
+const extractSearchTerm = url => url.replace(API_ENDPOINT, '');
+
+const getLastSearches = urls => urls.map(extractSearchTerm).reverse().slice(1);
+
+
+//[...new Set(].slice(-6,-1).reverse();
+
+
+
 
 
 const  App = () => {
   const [searchTerm, setSearchTerm] = useSemiPersistentState('search', 'React');
 
-  const [url, setUrl] = React.useState(
-    `${API_ENDPOINT}${searchTerm}`
-  );
+  const [urls, setUrls] = React.useState([getUrl(searchTerm)]);
 
   const handleSearchInput = event => {
     setSearchTerm(event.target.value);
   };
 
   const handleSearchSubmit = event => {
-    setUrl(`${API_ENDPOINT}${searchTerm}`);
+    handleSearch(searchTerm);
 
     event.preventDefault();
   };
+
+  const handleLastSearch = searchTerm => {
+    setSearchTerm(searchTerm);
+    handleSearch(searchTerm);
+  };
+
+  const handleSearch = searchTerm => {
+    const newUrl = getUrl(searchTerm);
+    setUrls(urls.filter(url => url !== newUrl).concat(newUrl).slice(-5));
+  };
+
+  const lastSearches = getLastSearches(urls);
 
   const [stories, dispatchStories] = React.useReducer(
     storiesReducer,
@@ -82,7 +103,8 @@ const  App = () => {
     dispatchStories({type: 'STORIES_FETCH_INIT'});
 
     try {
-      const result = await axios.get(url);
+      const lastUrl = urls[urls.length - 1];
+      const result = await axios.get(lastUrl);
 
       dispatchStories({
         type: 'STORIES_FETCH_SUCCESS',
@@ -91,7 +113,7 @@ const  App = () => {
     } catch {
       dispatchStories({type: 'STORIES_FETCH_FAILURE'});
     }
-  },[url]);
+  },[urls]);
 
 
   React.useEffect(() => {
@@ -106,6 +128,7 @@ const  App = () => {
     });
   };
 
+
   return (
     <div className="container">
       <h1 className="headline-primary">
@@ -113,6 +136,8 @@ const  App = () => {
       </h1>
 
       <SearchForm searchTerm={searchTerm} onSearchInput={handleSearchInput} onSearchSubmit={handleSearchSubmit}/>
+
+      <LastSearches lastSearches={lastSearches} onLastSearch={handleLastSearch} />
 
       <hr/>
 
@@ -141,6 +166,16 @@ const SearchForm = ({searchTerm, onSearchInput, onSearchSubmit,}) => (
     Submit
   </button>
 </form>
+);
+
+const LastSearches = ({lastSearches, onLastSearch}) => (
+  <>
+  {lastSearches.map((searchTerm, index) => (
+    <button key={searchTerm + index} type="button" onClick={() => onLastSearch(searchTerm)}>
+      {searchTerm}
+    </button>
+  ))}
+  </>
 );
 
 
