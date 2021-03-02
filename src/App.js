@@ -7,7 +7,18 @@ import {ReactComponent as Check} from './check.svg';
 import {ReactComponent as DownArrow} from './downArrow.svg';
 import {ReactComponent as UpArrow} from './upArrow.svg';
 
-const API_ENDPOINT = 'https://hn.algolia.com/api/v1/search?query=';
+const API_BASE = 'https://hn.algolia.com/api/v1';
+const API_SEARCH = '/search';
+const PARAM_SEARCH = 'query=';
+const PARAM_PAGE = 'page=';
+const PARAM_HITSPERPAGE = 'hitsPerPage=16'
+
+const getUrl = (searchTerm, page) => `${API_BASE}${API_SEARCH}?${PARAM_SEARCH}${searchTerm}&${PARAM_PAGE}${page}&${PARAM_HITSPERPAGE}`;
+
+const extractSearchTerm = url => url.substring(url.lastIndexOf('?') + 1, url.indexOf('&')).replace(PARAM_SEARCH, '');
+
+const getLastSearches = urls => urls.map(extractSearchTerm).reverse().slice(1);
+
 
 const useSemiPersistentState = (key, initialState) => {
   const [value, setValue] = React.useState(
@@ -35,7 +46,11 @@ const storiesReducer = (state, action) => {
         ...state,
         isLoading: false,
         isError: false,
-        data: action.payload,
+        data: 
+          action.payload.page === 0
+            ? action.payload.list
+            : state.data.concat(action.payload.list),
+        page: action.payload.page,
       };
     case 'STORIES_FETCH_FAILURE':
       return {
@@ -54,49 +69,45 @@ const storiesReducer = (state, action) => {
 
 };
 
-const getUrl = searchTerm => `${API_ENDPOINT}${searchTerm}`;
-
-const extractSearchTerm = url => url.replace(API_ENDPOINT, '');
-
-const getLastSearches = urls => urls.map(extractSearchTerm).reverse().slice(1);
-
-
-//[...new Set(].slice(-6,-1).reverse();
-
-
 
 
 
 const  App = () => {
   const [searchTerm, setSearchTerm] = useSemiPersistentState('search', 'React');
 
-  const [urls, setUrls] = React.useState([getUrl(searchTerm)]);
+  const [urls, setUrls] = React.useState([getUrl(searchTerm,0)]);
 
   const handleSearchInput = event => {
     setSearchTerm(event.target.value);
   };
 
   const handleSearchSubmit = event => {
-    handleSearch(searchTerm);
+    handleSearch(searchTerm, 0);
 
     event.preventDefault();
   };
 
   const handleLastSearch = searchTerm => {
     setSearchTerm(searchTerm);
-    handleSearch(searchTerm);
+    handleSearch(searchTerm, 0);
   };
 
-  const handleSearch = searchTerm => {
-    const newUrl = getUrl(searchTerm);
-    setUrls(urls.filter(url => url !== newUrl).concat(newUrl).slice(-5));
+  const handleSearch = (searchTerm, page) => {
+    const newUrl = getUrl(searchTerm, page);
+    setUrls(urls.filter(url => extractSearchTerm(url) !== extractSearchTerm(newUrl)).concat(newUrl).slice(-5));
+  };
+
+  const handleMore = () => {
+    const lastUrl = urls[urls.length -1];
+    const searchTerm = extractSearchTerm(lastUrl);
+    handleSearch(searchTerm, stories.page + 1);
   };
 
   const lastSearches = getLastSearches(urls);
 
   const [stories, dispatchStories] = React.useReducer(
     storiesReducer,
-    {data: [], isLoading: false, isError: false}
+    {data: [], page: 0, isLoading: false, isError: false}
   );
 
   const handleFetchStories = React.useCallback(async () => {
@@ -108,7 +119,10 @@ const  App = () => {
 
       dispatchStories({
         type: 'STORIES_FETCH_SUCCESS',
-        payload: result.data.hits,
+        payload: {
+          list: result.data.hits,
+          page: result.data.page,
+        }
       });
     } catch {
       dispatchStories({type: 'STORIES_FETCH_FAILURE'});
@@ -143,12 +157,17 @@ const  App = () => {
 
       {stories.isError && <p>Something went wrong...</p>}
 
+      <List list={stories.data} onRemoveItem={handleRemoveStory}/>
+
       {stories.isLoading ? (
         <p>Loading...</p>
       ): (
-        <List list={stories.data} onRemoveItem={handleRemoveStory}/>
+        <button type="button" onClick={handleMore}>
+          More
+        </button>
       )}
       
+
       
     </div>
   );

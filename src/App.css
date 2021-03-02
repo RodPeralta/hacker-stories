@@ -38,7 +38,7 @@
 }
 
 .container {
-  height: 100vw;
+  min-height: 47vw;
   padding: 20px;
 
   background: #83a4d4;
