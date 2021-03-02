@@ -1,72 +1,23 @@
 import React from 'react';
 import axios from 'axios';
-
 import SearchForm from './SearchForm';
 import List from './List';
 import LastSearches from './LastSearches';
+import useSemiPersistentState from './useSemiPersistentState';
+import storiesReducer from './storiesReducer';
+import './css/App.css'
 
-import './App.css'
-
+// API URL & PARAMS
 const API_BASE = 'https://hn.algolia.com/api/v1';
 const API_SEARCH = '/search';
 const PARAM_SEARCH = 'query=';
 const PARAM_PAGE = 'page=';
 const PARAM_HITSPERPAGE = 'hitsPerPage=16'
 
+// URL Utility functions
 const getUrl = (searchTerm, page) => `${API_BASE}${API_SEARCH}?${PARAM_SEARCH}${searchTerm}&${PARAM_PAGE}${page}&${PARAM_HITSPERPAGE}`;
-
 const extractSearchTerm = url => url.substring(url.lastIndexOf('?') + 1, url.indexOf('&')).replace(PARAM_SEARCH, '');
-
 const getLastSearches = urls => urls.map(extractSearchTerm).reverse().slice(1);
-
-
-const useSemiPersistentState = (key, initialState) => {
-  const [value, setValue] = React.useState(
-    localStorage.getItem(key) || initialState
-  );
-
-  React.useEffect(() => {
-    localStorage.setItem(key, value);
-  }, [value, key]);
-
-  return [value, setValue];
-};
-
-const storiesReducer = (state, action) => {
-  switch (action.type) {
-    case 'STORIES_FETCH_INIT':
-      return {
-        ...state,
-        isLoading: true,
-        isError: false,
-      };
-    case 'STORIES_FETCH_SUCCESS':
-      return {
-        ...state,
-        isLoading: false,
-        isError: false,
-        data: 
-          action.payload.page === 0
-            ? action.payload.list
-            : state.data.concat(action.payload.list),
-        page: action.payload.page,
-      };
-    case 'STORIES_FETCH_FAILURE':
-      return {
-        ...state,
-        isLoading: false,
-        isError: true,
-      };
-    case 'REMOVE_STORY':
-      return {
-        ...state,
-        data: state.data.filter(story => action.payload.objectID !== story.objectID),
-      };
-    default:
-      throw new Error();
-  }
-
-};
 
 
 const  App = () => {
@@ -79,6 +30,7 @@ const  App = () => {
     storiesReducer,
     {data: [], page: 0, isLoading: false, isError: false}
   );
+
 
 
   // Handler Functions
@@ -134,7 +86,6 @@ const  App = () => {
     handleFetchStories();
   }, [handleFetchStories]);
 
-
   const handleRemoveStory = item => {
     dispatchStories({
       type: 'REMOVE_STORY',
@@ -143,6 +94,8 @@ const  App = () => {
   };
 
 
+
+  // JSX Return
   return (
     <div className="container">
       <h1 className="headline-primary">

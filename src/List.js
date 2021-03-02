@@ -1,8 +1,8 @@
 import React from 'react';
 import {sortBy} from 'lodash';
-import {ReactComponent as Check} from './check.svg';
-import {ReactComponent as DownArrow} from './downArrow.svg';
-import {ReactComponent as UpArrow} from './upArrow.svg';
+import {ReactComponent as Check} from './svg/check.svg';
+import {ReactComponent as DownArrow} from './svg/downArrow.svg';
+import {ReactComponent as UpArrow} from './svg/upArrow.svg';
 
 const SORTS = {
     NONE: list => list,
